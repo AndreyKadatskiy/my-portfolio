@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Гостевая книга — ВелоМир</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrapper">
+    <header>
+        <div class="header-top">
+            <a href="index.html" class="logo">ВЕЛО<span>МИР</span></a>
+            <div class="status-bar">
+                <div id="js-greeting" style="font-weight:bold; color:#38bdf8;"></div>
+                <div id="js-clock"></div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="catalog.html">Каталог и заказ</a>
+        <a href="news.html">Новости</a>
+        <a href="about.html">О нас и контакты</a>
+        <a href="guestbook.html" class="active">Гостевая книга</a>
+        <a href="sitemap.html">Карта сайта</a>
+    </nav>
+
+    <div class="main-layout">
+        <aside class="sidebar">
+            <div class="card" id="auth-widget"></div>
+        </aside>
+
+        <main class="content">
+            <h2>Гостевая книга (обратная связь с посетителями)</h2>
+            <div class="card">
+                <div class="form-group">
+                    <label>Тип отправляемого сообщения:</label>
+                    <label style="display:inline; margin-right:14px;"><input type="radio" name="gb-type" value="Вопрос" checked> Вопрос</label>
+                    <label style="display:inline; margin-right:14px;"><input type="radio" name="gb-type" value="Предложение"> Предложение</label>
+                    <label style="display:inline; margin-right:14px;"><input type="radio" name="gb-type" value="Благодарность"> Благодарность</label>
+                    <label style="display:inline;"><input type="radio" name="gb-type" value="Жалоба"> Жалоба</label>
+                </div>
+
+                <div class="form-group">
+                    <label>Раздел магазина:</label>
+                    <select id="gb-category">
+                        <option value="Горные велосипеды">Горные велосипеды</option>
+                        <option value="Городские и шоссейные">Городские и шоссейные</option>
+                        <option value="Доставка и оплата">Доставка и оплата</option>
+                        <option value="Гарантия и велосервис">Гарантия и велосервис</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Текст сообщения:</label>
+                    <textarea id="gb-text" rows="4" placeholder="Введите ваш отзыв или вопрос..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Фамилия (разрешен ввод только кириллицы):</label>
+                    <input type="text" id="gb-author" oninput="filterCyrillic(this)" placeholder="Например: Иванов">
+                </div>
+
+                <div class="form-group">
+                    <label>Электронный адрес (E-mail):</label>
+                    <input type="text" id="gb-email" placeholder="example@mail.ru">
+                </div>
+
+                <div class="form-group">
+                    <label><input type="checkbox" id="gb-urgent"> Свяжитесь со мной по данному вопросу как можно быстрее</label>
+                </div>
+
+                <button class="btn btn-success" onclick="submitGuestbook()">Отправить</button>
+                <button class="btn btn-secondary" onclick="clearGuestbookForm()">Очистить</button>
+            </div>
+
+            <h3>Последние сообщения посетителей</h3>
+            <div id="gb-list"></div>
+        </main>
+    </div>
+
+    <footer>
+        &copy; 2026 Интернет-магазин «ВелоМир» | Курсовой проект по дисциплине «Web-технологии»
+    </footer>
+</div>
+
+<script src="app.js"></script>
+<script>
+    // Запрет ввода любых символов, кроме кириллицы и дефиса (как в примере из методички)
+    function filterCyrillic(input) {
+        input.value = input.value.replace(/[^А-Яа-яЁё-]/g, "");
+    }
+
+    function submitGuestbook() {
+        const type = document.querySelector('input[name="gb-type"]:checked').value;
+        const category = document.getElementById("gb-category").value;
+        const text = document.getElementById("gb-text").value.trim();
+        const author = document.getElementById("gb-author").value.trim();
+        const email = document.getElementById("gb-email").value.trim();
+
+        if (!text || !author || !email) {
+            alert("Необходимо заполнить обязательные поля!");
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert("Неверный формат адреса почты!");
+            return;
+        }
+
+        const list = getGuestbook();
+        list.unshift({
+            id: Date.now(),
+            type,
+            category,
+            author,
+            email,
+            text,
+            date: new Date().toLocaleDateString("ru-RU")
+        });
+        saveGuestbook(list);
+        clearGuestbookForm();
+        renderGuestbook();
+        alert("Сообщение успешно добавлено в гостевую книгу!");
+    }
+
+    function clearGuestbookForm() {
+        document.getElementById("gb-text").value = "";
+        document.getElementById("gb-author").value = "";
+        document.getElementById("gb-email").value = "";
+        document.getElementById("gb-urgent").checked = false;
+    }
+
+    function renderGuestbook() {
+        const list = getGuestbook();
+        document.getElementById("gb-list").innerHTML = list.map(item => `
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; font-size:13px; color:#64748b; margin-bottom:6px;">
+                    <span><strong>${item.author}</strong> (${item.email}) • <b>${item.type}</b> [${item.category}]</span>
+                    <span>${item.date}</span>
+                </div>
+                <p>${item.text}</p>
+            </div>
+        `).join("");
+    }
+
+    document.addEventListener("DOMContentLoaded", renderGuestbook);
+</script>
+</body>
+</html>

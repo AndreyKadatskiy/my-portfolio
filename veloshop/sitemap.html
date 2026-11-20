@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Карта сайта — ВелоМир</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrapper">
+    <header>
+        <div class="header-top">
+            <a href="index.html" class="logo">ВЕЛО<span>МИР</span></a>
+            <div class="status-bar">
+                <div id="js-greeting" style="font-weight:bold; color:#38bdf8;"></div>
+                <div id="js-clock"></div>
+            </div>
+        </div>
+    </header>
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="catalog.html">Каталог и заказ</a>
+        <a href="news.html">Новости</a>
+        <a href="about.html">О нас и контакты</a>
+        <a href="guestbook.html">Гостевая книга</a>
+        <a href="sitemap.html" class="active">Карта сайта</a>
+    </nav>
+    <div class="main-layout">
+        <aside class="sidebar"><div class="card" id="auth-widget"></div></aside>
+        <main class="content">
+            <h2>Карта Web-сайта «ВелоМир»</h2>
+            <div class="card">
+                <ul style="margin-left:24px; line-height:2;">
+                    <li><a href="index.html">Главная страница (Витрина и калькулятор подбора рамы)</a></li>
+                    <li><a href="catalog.html">Каталог и онлайн-заказ велосипедов</a>
+                        <ul style="margin-left:24px;">
+                            <li><a href="dogovor.html">Оформление реквизитов и печатный договор купли-продажи</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="news.html">Новости и акции магазина</a></li>
+                    <li><a href="about.html">О нас, реквизиты и контакты</a></li>
+                    <li><a href="guestbook.html">Гостевая книга (отзывы и вопросы посетителей)</a></li>
+                    <li><a href="admin.html">Панель администратора (доступна после входа под admin / admin)</a></li>
+                </ul>
+            </div>
+        </main>
+    </div>
+    <footer>&copy; 2026 Интернет-магазин «ВелоМир»</footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

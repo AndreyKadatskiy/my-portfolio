@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель администратора — ВелоМир</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrapper">
+    <header>
+        <div class="header-top">
+            <a href="index.html" class="logo">ВЕЛО<span>МИР</span> — АДМИН-БЛОК</a>
+            <div class="status-bar">
+                <div id="js-greeting" style="font-weight:bold; color:#38bdf8;"></div>
+                <div id="js-clock"></div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="catalog.html">Каталог и заказ</a>
+        <a href="admin.html" class="active">Админ-панель</a>
+        <a href="guestbook.html">Гостевая книга</a>
+        <a href="sitemap.html">Карта сайта</a>
+    </nav>
+
+    <div class="main-layout">
+        <aside class="sidebar">
+            <div class="card" id="auth-widget"></div>
+        </aside>
+
+        <main class="content">
+            <h2>Управление ассортиментом велосипедов</h2>
+            <div class="card">
+                <h3 id="form-title">Добавить новый велосипед</h3>
+                <input type="hidden" id="edit-id">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div class="form-group">
+                        <label>Название модели:</label>
+                        <input type="text" id="bike-name" placeholder="Например: Cube Aim Pro">
+                    </div>
+                    <div class="form-group">
+                        <label>Категория:</label>
+                        <select id="bike-cat">
+                            <option value="Горный (MTB)">Горный (MTB)</option>
+                            <option value="Шоссейный">Шоссейный</option>
+                            <option value="Городской складной">Городской складной</option>
+                            <option value="Гравийный">Гравийный</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Диаметр колес:</label>
+                        <input type="text" id="bike-wheel" value='29"'>
+                    </div>
+                    <div class="form-group">
+                        <label>Количество на складе (шт.):</label>
+                        <input type="number" id="bike-stock" value="5" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Цена (руб.):</label>
+                        <input type="number" id="bike-price" value="45000" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Краткое описание:</label>
+                        <input type="text" id="bike-desc" placeholder="Характеристики рамы и тормозов">
+                    </div>
+                </div>
+                <button class="btn btn-success" onclick="saveBikeForm()">Сохранить товар</button>
+                <button class="btn btn-secondary" onclick="resetBikeForm()">Очистить</button>
+            </div>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Модель</th>
+                    <th>Категория</th>
+                    <th>Склад</th>
+                    <th>Цена</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody id="admin-bikes-tbody"></tbody>
+            </table>
+
+            <h2>Отчет по заказам покупателей</h2>
+            <div class="card" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+                <div class="form-group" style="margin:0;">
+                    <label>Дата с:</label>
+                    <input type="date" id="rep-from">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Дата по:</label>
+                    <input type="date" id="rep-to">
+                </div>
+                <button class="btn" onclick="renderOrdersReport()">Сформировать отчет</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('rep-from').value=''; document.getElementById('rep-to').value=''; renderOrdersReport();">Сбросить фильтр</button>
+            </div>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>№ Договора</th>
+                    <th>Дата</th>
+                    <th>Покупатель</th>
+                    <th>Состав заказа</th>
+                    <th>Доставка</th>
+                    <th>Сумма, руб.</th>
+                </tr>
+                </thead>
+                <tbody id="admin-orders-tbody"></tbody>
+            </table>
+        </main>
+    </div>
+
+    <footer>
+        &copy; 2026 Интернет-магазин «ВелоМир» | Панель администратора
+    </footer>
+</div>
+
+<script src="app.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const user = getCurrentUser();
+        if (!user || user.role !== "admin") {
+            alert("Доступ запрещен! Войдите под учетной записью администратора (admin / admin).");
+            location.href = "index.html";
+            return;
+        }
+        renderAdminBikes();
+        renderOrdersReport();
+    });
+
+    function renderAdminBikes() {
+        const tbody = document.getElementById("admin-bikes-tbody");
+        tbody.innerHTML = getBikes().map(b => `
+            <tr>
+                <td>${b.id}</td>
+                <td>${b.name}</td>
+                <td>${b.category}</td>
+                <td>${b.stock} шт.</td>
+                <td>${b.price.toLocaleString("ru-RU")} руб.</td>
+                <td>
+                    <button class="btn" style="padding:4px 8px; font-size:12px;" onclick="editBike(${b.id})">Изменить</button>
+                    <button class="btn btn-danger" style="padding:4px 8px; font-size:12px;" onclick="deleteBike(${b.id})">Удалить</button>
+                </td>
+            </tr>
+        `).join("");
+    }
+
+    function saveBikeForm() {
+        const editId = document.getElementById("edit-id").value;
+        const name = document.getElementById("bike-name").value.trim();
+        const category = document.getElementById("bike-cat").value;
+        const wheel = document.getElementById("bike-wheel").value.trim();
+        const stock = parseInt(document.getElementById("bike-stock").value, 10);
+        const price = parseInt(document.getElementById("bike-price").value, 10);
+        const desc = document.getElementById("bike-desc").value.trim();
+
+        if (!name || isNaN(stock) || isNaN(price) || price <= 0) {
+            alert("Заполните корректно название, количество и цену!");
+            return;
+        }
+
+        const bikes = getBikes();
+        if (editId) {
+            const idx = bikes.findIndex(b => b.id === parseInt(editId, 10));
+            if (idx !== -1) bikes[idx] = { id: parseInt(editId, 10), name, category, wheel, stock, price, desc };
+        } else {
+            const newId = bikes.length ? Math.max(...bikes.map(b => b.id)) + 1 : 1;
+            bikes.push({ id: newId, name, category, wheel, stock, price, desc });
+        }
+        saveBikes(bikes);
+        resetBikeForm();
+        renderAdminBikes();
+    }
+
+    function editBike(id) {
+        const b = getBikes().find(item => item.id === id);
+        if (!b) return;
+        document.getElementById("form-title").textContent = "Редактирование велосипеда #" + b.id;
+        document.getElementById("edit-id").value = b.id;
+        document.getElementById("bike-name").value = b.name;
+        document.getElementById("bike-cat").value = b.category;
+        document.getElementById("bike-wheel").value = b.wheel;
+        document.getElementById("bike-stock").value = b.stock;
+        document.getElementById("bike-price").value = b.price;
+        document.getElementById("bike-desc").value = b.desc;
+    }
+
+    function deleteBike(id) {
+        if (!confirm("Удалить выбранный велосипед из каталога?")) return;
+        saveBikes(getBikes().filter(b => b.id !== id));
+        renderAdminBikes();
+    }
+
+    function resetBikeForm() {
+        document.getElementById("form-title").textContent = "Добавить новый велосипед";
+        document.getElementById("edit-id").value = "";
+        document.getElementById("bike-name").value = "";
+        document.getElementById("bike-desc").value = "";
+    }
+
+    function renderOrdersReport() {
+        const from = document.getElementById("rep-from").value;
+        const to = document.getElementById("rep-to").value;
+        const orders = getOrders().filter(o => {
+            if (from && o.date < from) return false;
+            if (to && o.date > to) return false;
+            return true;
+        });
+
+        let totalRevenue = 0;
+        const rows = orders.map(o => {
+            totalRevenue += o.total;
+            return `
+                <tr>
+                    <td>№ ${o.id}</td>
+                    <td>${o.date}</td>
+                    <td>${o.customerName}</td>
+                    <td>${o.items}</td>
+                    <td>${o.delivery}</td>
+                    <td>${o.total.toLocaleString("ru-RU")}</td>
+                </tr>
+            `;
+        }).join("");
+
+        document.getElementById("admin-orders-tbody").innerHTML = rows + `
+            <tr style="background:#dcfce7; font-weight:bold;">
+                <td colspan="5">ИТОГО ЗА ВЫБРАННЫЙ ПЕРИОД (${orders.length} заказов):</td>
+                <td>${totalRevenue.toLocaleString("ru-RU")} руб.</td>
+            </tr>
+        `;
+    }
+</script>
+</body>
+</html>

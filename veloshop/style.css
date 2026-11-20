@@ -1,0 +1,286 @@
+/* Внешняя таблица стилей (External CSS) */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    background-color: #f0f4f8;
+    color: #1e293b;
+    line-height: 1.5;
+}
+
+.wrapper {
+    max-width: 1140px;
+    margin: 0 auto;
+    background: #ffffff;
+    min-height: 100vh;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Шапка */
+header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+    color: #ffffff;
+    padding: 16px 24px;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.logo {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #38bdf8;
+    text-decoration: none;
+}
+
+.logo span {
+    color: #ffffff;
+}
+
+.status-bar {
+    text-align: right;
+    font-size: 13px;
+    color: #cbd5e1;
+}
+
+.ticker-wrap {
+    margin-top: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 4px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.ticker-text {
+    display: inline-block;
+    padding-left: 100%;
+    animation: ticker 18s linear infinite;
+    color: #fde047;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+@keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+/* Навигация */
+nav {
+    background: #1d4ed8;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+nav a {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 12px 18px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.25s, color 0.25s;
+}
+
+nav a:hover, nav a.active {
+    background: #0284c7;
+    color: #fef08a;
+}
+
+/* Основная сетка */
+.main-layout {
+    display: flex;
+    flex: 1;
+    padding: 20px;
+    gap: 20px;
+}
+
+.sidebar {
+    width: 270px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.content {
+    flex: 1;
+}
+
+/* Карточки и блоки */
+.card {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.card h3, .content h2 {
+    color: #1e3a8a;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #38bdf8;
+    padding-bottom: 6px;
+}
+
+/* Формы и кнопки */
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 14px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
+input[type="date"],
+select,
+textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #94a3b8;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.btn {
+    display: inline-block;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.btn:hover {
+    background: #1d4ed8;
+}
+
+.btn-success { background: #16a34a; }
+.btn-success:hover { background: #15803d; }
+
+.btn-danger { background: #dc2626; }
+.btn-danger:hover { background: #b91c1c; }
+
+.btn-secondary { background: #64748b; }
+.btn-secondary:hover { background: #475569; }
+
+/* Таблицы */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+th, td {
+    border: 1px solid #cbd5e1;
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background: #1e3a8a;
+    color: #ffffff;
+}
+
+tr:nth-child(even) {
+    background: #f1f5f9;
+}
+
+/* Каталог карточек */
+.bike-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.bike-item {
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 12px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.bike-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.bike-thumb {
+    height: 130px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.bike-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: #16a34a;
+    margin: 8px 0;
+}
+
+/* Баннер-информер */
+.banner-box {
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    color: #ffffff;
+    padding: 14px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+footer {
+    background: #0f172a;
+    color: #94a3b8;
+    text-align: center;
+    padding: 14px;
+    font-size: 13px;
+}
+
+/* Печать договора */
+@media print {
+    header, nav, .sidebar, footer, .no-print {
+        display: none !important;
+    }
+    .wrapper {
+        box-shadow: none;
+    }
+}

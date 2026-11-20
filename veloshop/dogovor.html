@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Оформление договора — ВелоМир</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .contract-doc {
+            border: 1px solid #000;
+            padding: 25px;
+            background: #fff;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <header>
+        <div class="header-top">
+            <a href="index.html" class="logo">ВЕЛО<span>МИР</span></a>
+            <div class="status-bar">
+                <div id="js-greeting" style="font-weight:bold; color:#38bdf8;"></div>
+                <div id="js-clock"></div>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="catalog.html" class="active">Каталог и заказ</a>
+        <a href="news.html">Новости</a>
+        <a href="about.html">О нас и контакты</a>
+        <a href="guestbook.html">Гостевая книга</a>
+        <a href="sitemap.html">Карта сайта</a>
+    </nav>
+
+    <div class="main-layout">
+        <aside class="sidebar">
+            <div class="card" id="auth-widget"></div>
+        </aside>
+
+        <main class="content">
+            <div id="step-form">
+                <h2>Заполнение данных для договора купли-продажи</h2>
+                <div class="card">
+                    <div class="form-group">
+                        <label>ФИО покупателя (полностью):</label>
+                        <input type="text" id="dog-fio">
+                    </div>
+                    <div class="form-group">
+                        <label>Телефон:</label>
+                        <input type="text" id="dog-phone">
+                    </div>
+                    <div class="form-group">
+                        <label>Адрес доставки / регистрации:</label>
+                        <input type="text" id="dog-address">
+                    </div>
+                    <div class="form-group">
+                        <label>Способ оплаты:</label>
+                        <select id="dog-payment">
+                            <option value="Банковская карта / СБП">Банковская карта / СБП</option>
+                            <option value="Наличный расчет при получении">Наличный расчет при получении</option>
+                            <option value="Безналичный расчет по счету">Безналичный расчет по счету</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Доставка курьером:</label>
+                        <select id="dog-delivery">
+                            <option value="Да">Да (курьером по адресу)</option>
+                            <option value="Нет">Нет (самовывоз из магазина)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" onclick="generateContract()">Подтвердить заказ и сформировать договор</button>
+                </div>
+            </div>
+
+            <div id="step-contract" style="display:none;">
+                <div class="no-print" style="margin-bottom:12px; display:flex; gap:10px;">
+                    <button class="btn" onclick="window.print()">Распечатать договор</button>
+                    <a href="catalog.html" class="btn btn-secondary">Вернуться в каталог</a>
+                </div>
+                <div class="contract-doc" id="contract-body"></div>
+            </div>
+        </main>
+    </div>
+
+    <footer>
+        &copy; 2026 Интернет-магазин «ВелоМир» | Курсовой проект по дисциплине «Web-технологии»
+    </footer>
+</div>
+
+<script src="app.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const user = getCurrentUser();
+        const draft = JSON.parse(sessionStorage.getItem("vm_draft_order") || "null");
+        if (!user || !draft) {
+            alert("Нет активного заказа. Перенаправление в каталог...");
+            location.href = "catalog.html";
+            return;
+        }
+        document.getElementById("dog-fio").value = user.fio || "";
+        document.getElementById("dog-phone").value = user.phone || "";
+        document.getElementById("dog-address").value = user.address || "";
+    });
+
+    function generateContract() {
+        const fio = document.getElementById("dog-fio").value.trim();
+        const phone = document.getElementById("dog-phone").value.trim();
+        const address = document.getElementById("dog-address").value.trim();
+        const payment = document.getElementById("dog-payment").value;
+        const delivery = document.getElementById("dog-delivery").value;
+
+        if (!fio || !phone || !address) {
+            alert("Необходимо заполнить все обязательные поля!");
+            return;
+        }
+
+        const user = getCurrentUser();
+        const draft = JSON.parse(sessionStorage.getItem("vm_draft_order"));
+        const bikes = getBikes();
+
+        // Списание со склада
+        draft.items.forEach(item => {
+            const target = bikes.find(b => b.id === item.id);
+            if (target) target.stock = Math.max(0, target.stock - item.qty);
+        });
+        saveBikes(bikes);
+
+        // Сохранение заказа в БД
+        const orders = getOrders();
+        const contractNum = 100 + orders.length + 1;
+        const today = new Date().toISOString().split("T")[0];
+        const itemsStr = draft.items.map(i => `${i.name} (${i.qty} шт.)`).join(", ");
+
+        orders.push({
+            id: contractNum,
+            date: today,
+            user: user.login,
+            customerName: fio,
+            items: itemsStr,
+            total: draft.total,
+            delivery: delivery
+        });
+        saveOrders(orders);
+        sessionStorage.removeItem("vm_draft_order");
+
+        document.getElementById("step-form").style.display = "none";
+        document.getElementById("step-contract").style.display = "block";
+        document.getElementById("contract-body").innerHTML = `
+            <h2 style="text-align:center; border:none; color:#000;">ДОГОВОР КУПЛИ-ПРОДАЖИ № ${contractNum}</h2>
+            <p style="display:flex; justify-content:space-between;"><strong>г. Воронеж</strong> <strong>${today}</strong></p>
+            <p style="margin:12px 0;">ООО «ВелоМир», именуемое в дальнейшем «Продавец», в лице директора Морозова В.П., с одной стороны, и <strong>${fio}</strong>, именуемый в дальнейшем «Покупатель», с другой стороны, заключили настоящий Договор о нижеследующем:</p>
+            <p><strong>1. ПРЕДМЕТ ДОГОВОРА</strong></p>
+            <p>1.1. Продавец обязуется передать в собственность Покупателя, а Покупатель обязуется принять и оплатить следующие товары: <strong>${itemsStr}</strong>.</p>
+            <p>1.2. Общая стоимость заказа составляет: <strong>${draft.total.toLocaleString("ru-RU")} руб.</strong></p>
+            <p style="margin-top:8px;"><strong>2. УСЛОВИЯ ОПЛАТЫ И ДОСТАВКИ</strong></p>
+            <p>2.1. Форма оплаты: ${payment}.</p>
+            <p>2.2. Необходимость доставки: ${delivery}. Адрес: ${address}.</p>
+            <p style="margin-top:8px;"><strong>3. РЕКВИЗИТЫ И ПОДПИСИ СТОРОН</strong></p>
+            <table style="margin-top:8px;">
+                <tr>
+                    <th>Продавец</th>
+                    <th>Покупатель</th>
+                </tr>
+                <tr>
+                    <td>ООО «ВелоМир»<br>г. Воронеж, Московский пр-т, 14<br>ИНН 3662001122 / КПП 366201001<br>Тел.: +7 (473) 200-11-22</td>
+                    <td>${fio}<br>Адрес: ${address}<br>Тел.: ${phone}</td>
+                </tr>
+            </table>
+            <p style="margin-top:20px;">Продавец: _______________ / В.П. Морозов / &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Покупатель: _______________ / ${fio} /</p>
+        `;
+    }
+</script>
+</body>
+</html>
